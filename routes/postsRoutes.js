@@ -16,6 +16,6 @@ const {
 router.route("/").get(getAllPosts).post(createPost);
 
 // Get Post OR Update Post OR Delete a Post
-routerroute("/:postID").get(getPost).patch(updatePost).delete(deletePost);
+router.route("/:postID").get(getPost).patch(updatePost).delete(deletePost);
 
 module.exports = router;

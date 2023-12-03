@@ -2,7 +2,7 @@ const catchAsync = require("./../utils/catchAsync");
 const APPError = require("./../utils/appError");
 const APIFeatures = require("./../utils/APIFeatures");
 
-const Post = require("./../models/post");
+const Post = require("./../models/postModel");
 
 /* ==============================
    ========CRUD OPERATION========
