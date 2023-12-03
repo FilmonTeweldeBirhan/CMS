@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const moment = require("moment-timezone");
+// const moment = require("moment-timezone");
 
 const postSchema = new mongoose.Schema(
   {
@@ -12,9 +12,8 @@ const postSchema = new mongoose.Schema(
       minlength: [3, "A Post should have at least 3 characters"],
     },
     post_category: {
-      type: String,
-      required: [true, "A Post must have a category"],
-      trim: true,
+      type: mongoose.Schema.ObjectId,
+      ref: "category",
     },
     post_price: {
       type: Number,
@@ -54,6 +53,15 @@ const postSchema = new mongoose.Schema(
 
 // Used index to improve read performance!
 postSchema.index({ post_category: 1, post_price: 1, ratingsAverage: -1 });
+
+// Populate Category on every request with the find criteria
+postSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "post_category",
+    select: "category_name",
+  });
+  next();
+});
 
 const Post = mongoose.model("post", postSchema);
 

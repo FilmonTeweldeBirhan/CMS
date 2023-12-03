@@ -2,6 +2,8 @@ const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 const postsRouter = require("./routes/postsRoutes");
+const categoryRouter = require("./routes/categoryRoutes");
+const globalErrorHandler = require("./controllers/errorController");
 
 const app = express();
 
@@ -23,5 +25,13 @@ app.get("/home", (req, res) => {
 
 /* =========== ROUTES  =========== */
 app.use("/api/v1/posts", postsRouter);
+app.use("/api/v1/categories", categoryRouter);
+
+/* =========== Error Handleres  =========== */
+app.use((req, res, next) => {
+  next(new AppError(`Can't ${req.method} ${req.originalUrl}`, 404));
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;
