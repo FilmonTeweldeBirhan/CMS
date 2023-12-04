@@ -25,6 +25,7 @@ const postSchema = new mongoose.Schema(
       max: [5, "Rating must be between 1 and 5"],
       set: (val) => Math.round(val * 10) / 10,
     },
+    post_tags: [String],
     ratingsQuantity: Number,
     post_summary: {
       type: String,
@@ -42,7 +43,6 @@ const postSchema = new mongoose.Schema(
     post_images: [String],
     post_dateCreated: {
       type: Date,
-      default: new Date(),
     },
   },
   {
@@ -53,6 +53,26 @@ const postSchema = new mongoose.Schema(
 
 // Used index to improve read performance!
 postSchema.index({ post_category: 1, post_price: 1, ratingsAverage: -1 });
+
+/* Create New Date for every newly Posted Item
+   then save it post_dateCreated prop.  */
+postSchema.pre("save", function (next) {
+  let now = new Date();
+  const timeStamp = new Date(
+    Date.UTC(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+      now.getMilliseconds()
+    )
+  );
+  this.post_dateCreated = timeStamp;
+
+  next();
+});
 
 // Populate Category on every request with the find criteria
 postSchema.pre(/^find/, function (next) {

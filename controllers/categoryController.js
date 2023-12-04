@@ -1,11 +1,12 @@
 const APPError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
+const APIFeatures = require("./../utils/apiFeatures");
 
 const Category = require("./../models/categoryModel");
 
 // Limits the number of categories
 exports.limitCategory = (req, res, next) => {
-  req.query.limit = "5";
+  req.query.limit = "4";
   req.query.sort = "category_name";
 
   next();
@@ -16,13 +17,26 @@ exports.limitCategory = (req, res, next) => {
    ============================== */
 
 exports.getAllCategories = catchAsync(async (req, res) => {
+  // If there is a search query send this
+  let options = {};
+  if (req.query.search) {
+    options = { category_name: { $regex: req.query.search } };
+  }
+
   // 1) Send it to the APIFeatures
-  const features = new APIFeatures(Category.find(), req.query);
+  const features = new APIFeatures(Category.find(options), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
 
   const categories = await features.query;
 
   // 2) Check if there are any categories
   if (!categories) throw new APPError("No files found", 404);
+
+  if (categories.length <= 0)
+    throw new APPError("No categories were found.", 404);
 
   // 3) Send JSON
   res.status(200).json({

@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const postsRouter = require("./routes/postsRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
 const globalErrorHandler = require("./controllers/errorController");
+const APPError = require("./utils/appError");
 
 const app = express();
 
@@ -29,7 +30,7 @@ app.use("/api/v1/categories", categoryRouter);
 
 /* =========== Error Handleres  =========== */
 app.use((req, res, next) => {
-  next(new AppError(`Can't ${req.method} ${req.originalUrl}`, 404));
+  next(new APPError(`Can't ${req.method} ${req.originalUrl}`, 404));
 });
 
 app.use(globalErrorHandler);
