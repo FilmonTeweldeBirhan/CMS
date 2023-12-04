@@ -73,7 +73,7 @@ exports.updateCategory = catchAsync(async (req, res) => {
   // 1) Update Category and run validators using the options
   const updateCategory = await Category.findByIdAndUpdate(
     req.params.catID,
-    req.body.category_name,
+    req.body,
     {
       new: true,
       runValidators: true,
