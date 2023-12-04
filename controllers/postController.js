@@ -27,6 +27,8 @@ exports.getAllPosts = catchAsync(async (req, res) => {
   });
 });
 
+exports.getPostByCategory = catchAsync(async (req, res) => {});
+
 exports.getPost = catchAsync(async (req, res) => {
   // 1) Get Post with postID
   const post = await Post.findById(req.params.postID);
