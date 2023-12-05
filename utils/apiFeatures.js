@@ -53,6 +53,19 @@ class APIFeatures {
 
     return this;
   }
+
+  search() {
+    // {$or: [{post_title: {$regex: 'Buggatti'}}, {post_description: {$regex: "iPhone"}}]}
+    if (this.queryStr.search) {
+      const post_title = { post_title: { $regex: this.queryStr.search } };
+      const post_tags = { post_tags: { $regex: this.queryStr.search } };
+      this.query = this.query.find({ $or: [post_title, post_tags] });
+    } else {
+      this.query = this.query.find();
+    }
+
+    return this;
+  }
 }
 
 module.exports = APIFeatures;
