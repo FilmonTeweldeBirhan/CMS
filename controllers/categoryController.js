@@ -17,11 +17,14 @@ exports.limitCategory = (req, res, next) => {
    ============================== */
 
 exports.getAllCategories = catchAsync(async (req, res) => {
+  // If there is a search query send this
+  let options = {};
+  if (req.query.search) {
+    options = { category_name: { $regex: req.query.search } };
+  }
+
   // 1) Send it to the APIFeatures
-  const features = new APIFeatures(
-    Category.find({ category_name: { $regex: req.query.search } }),
-    req.query
-  )
+  const features = new APIFeatures(Category.find(options), req.query)
     .filter()
     .sort()
     .limitFields()
@@ -31,6 +34,9 @@ exports.getAllCategories = catchAsync(async (req, res) => {
 
   // 2) Check if there are any categories
   if (!categories) throw new APPError("No files found", 404);
+
+  if (categories.length <= 0)
+    throw new APPError("No categories were found.", 404);
 
   // 3) Send JSON
   res.status(200).json({
