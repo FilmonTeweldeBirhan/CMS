@@ -1,11 +1,12 @@
 const APPError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
+const APIFeatures = require("./../utils/apiFeatures");
 
 const Category = require("./../models/categoryModel");
 
 // Limits the number of categories
 exports.limitCategory = (req, res, next) => {
-  req.query.limit = "5";
+  req.query.limit = "4";
   req.query.sort = "category_name";
 
   next();
@@ -17,7 +18,11 @@ exports.limitCategory = (req, res, next) => {
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   // 1) Send it to the APIFeatures
-  const features = new APIFeatures(Category.find(), req.query);
+  const features = new APIFeatures(Category.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
 
   const categories = await features.query;
 

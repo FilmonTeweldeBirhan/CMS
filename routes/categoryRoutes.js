@@ -10,7 +10,8 @@ const {
 
 /* =======================
     /api/v1/categories/
-   /api/v1/categories/:catID  
+   /api/v1/categories/:catID
+   /api/v1/categories/navbar  
    ======================= */
 
 // Get limited Categories for the Navbar
