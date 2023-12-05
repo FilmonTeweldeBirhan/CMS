@@ -25,6 +25,7 @@ const postSchema = new mongoose.Schema(
       max: [5, "Rating must be between 1 and 5"],
       set: (val) => Math.round(val * 10) / 10,
     },
+    post_tags: [String],
     ratingsQuantity: Number,
     post_summary: {
       type: String,
