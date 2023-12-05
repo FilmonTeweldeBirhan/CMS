@@ -4,7 +4,7 @@ class APIFeatures {
     this.queryStr = queryStr;
   }
 
-  filtering() {
+  filter() {
     const queryObj = { ...this.queryStr };
     // Delete the excluded fields!
     const excludedFields = ["limit", "fields", "page", "sort", "search"];
@@ -16,7 +16,7 @@ class APIFeatures {
 
     this.query = this.query.find(JSON.parse(queryStr));
 
-    return this.query;
+    return this;
   }
 
   sort() {
@@ -28,18 +28,18 @@ class APIFeatures {
       this.query = this.query.sort("-post_dateCreated");
     }
 
-    return this.query;
+    return this;
   }
 
-  limitFileds() {
+  limitFields() {
     if (this.queryStr.fields) {
       const fields = this.queryStr.fields.split(",").join(" ");
       this.query = this.query.select(fields);
     } else {
-      this.query = this.query("-__v");
+      this.query = this.query.select("-__v");
     }
 
-    return this.query;
+    return this;
   }
 
   pagination() {
@@ -51,7 +51,7 @@ class APIFeatures {
     // Skip and limit page depending on the page and skip vars!
     this.query = this.query.skip(skip).limit(limit);
 
-    return this.query;
+    return this;
   }
 }
 
