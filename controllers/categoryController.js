@@ -18,7 +18,10 @@ exports.limitCategory = (req, res, next) => {
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   // 1) Send it to the APIFeatures
-  const features = new APIFeatures(Category.find(), req.query)
+  const features = new APIFeatures(
+    Category.find({ category_name: { $regex: req.query.search } }),
+    req.query
+  )
     .filter()
     .sort()
     .limitFields()

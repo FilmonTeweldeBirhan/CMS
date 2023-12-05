@@ -12,11 +12,14 @@ const Category = require("../models/categoryModel");
 exports.getAllPosts = catchAsync(async (req, res) => {
   const features = new APIFeatures(Post.find(), req.query)
     .filter()
+    .search()
     .sort()
     .limitFields()
     .pagination();
 
   const posts = await features.query;
+
+  if (posts.length <= 0) throw new APPError("No posts were found.", 404);
 
   // Send JSON
   res.status(200).json({
@@ -30,7 +33,16 @@ exports.getAllPosts = catchAsync(async (req, res) => {
 
 exports.getPostByCategory = catchAsync(async (req, res) => {
   // 1) Get PostByCategory Using the given CategoryID
-  const postByCategory = await Post.find({ post_category: req.params.catID });
+  const features = new APIFeatures(
+    Post.find({ post_category: req.params.catID }),
+    req.query
+  )
+    .filter()
+    .search()
+    .sort()
+    .limitFields()
+    .pagination();
+  const postByCategory = await features.query;
 
   // 2) Check if there is Post if not throw error
   if (!postByCategory || postByCategory.length <= 0)
