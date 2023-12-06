@@ -1,9 +1,87 @@
+const fs = require("fs");
 const catchAsync = require("./../utils/catchAsync");
 const APPError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
+const multer = require("multer");
+const sharp = require("sharp");
 
 const Post = require("./../models/postModel");
 const Category = require("../models/categoryModel");
+
+/* ==============================
+   =====MULTER CONFIGURATION=====
+   ============================== */
+// Chose memoryStorage
+const multerStorage = multer.memoryStorage();
+
+// Filter files
+const multerFilter = (req, file, cb) => {
+  // Check if the file is an image if not send an error!
+  if (!file.mimetype.startsWith("image")) {
+    return cb(
+      new APPError("Invalid file, please provide images only.", 400),
+      false
+    );
+  }
+
+  // if the file is an image
+  cb(null, true);
+};
+
+// Configure the multer using multerstorage and multerFilter
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+// Get the files using their name attribute
+exports.uploadPostImage = upload.fields([
+  { name: "post_imageCover", maxCount: 1 },
+  { name: "post_images", maxCount: 3 },
+]);
+
+/* ==============================
+   ====== IMAGE PROCCESSING =====
+   ============================== */
+exports.resizeImage = catchAsync(async (req, res, next) => {
+  // console.log(req.files);
+  // 1) Check if the imageCover field is there if not leave it
+  if (!req.files.post_imageCover) return next();
+
+  // 2) Send filePath of imageCover to the req.body
+  req.body.post_imageCover = `post-${Date.now()}-cover.jpeg`;
+
+  // 3) Resize the imageCover using sharp
+  // we're using it as array bc it comes from FormData()
+  await sharp(req.files.post_imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/images/posts/${req.body.post_imageCover}`);
+
+  // If there is no post_images
+  if (!req.files.post_images) return next();
+  // 4) Send filePath of images to the req.body.images by using array
+  req.body.post_images = [];
+
+  /* 5) Loop through the images, resize them and push them onto the array
+  Promise all the array so that the code doesn't go to next immediately */
+  await Promise.all(
+    req.files.post_images.map(async (file, i) => {
+      const fileName = `post-${Date.now()}-${i + 1}.jpeg`;
+
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat("jpeg")
+        .jpeg({ quality: 90 })
+        .toFile(`public/images/posts/${fileName}`);
+
+      req.body.post_images.push(fileName);
+    })
+  );
+
+  next();
+});
 
 /* ==============================
    ========CRUD OPERATION========
@@ -92,16 +170,35 @@ exports.createPost = catchAsync(async (req, res) => {
 });
 
 exports.updatePost = catchAsync(async (req, res) => {
-  // 1) Update Post and run validators using the options
+  // 1) Find the post to be updated
+  const post = await Post.findById(req.params.postID);
+
+  // 2) Delete old images
+  if (req.body.post_imageCover || req.body.post_images) {
+    const oldImages = [];
+    if (req.body.post_imageCover) {
+      oldImages.push(post.post_imageCover);
+    }
+
+    if (req.body.post_images) {
+      post.post_images.forEach((image) => oldImages.push(image));
+    }
+
+    oldImages.forEach((image) => {
+      fs.unlinkSync(`public/images/posts/${image}`);
+    });
+  }
+
+  // 3) Update Post and run validators using the options
   const updatePost = await Post.findByIdAndUpdate(req.params.postID, req.body, {
     new: true,
     runValidators: true,
   });
 
-  // 2) Check if post was updated or not
+  // 4) Check if post was updated or not
   if (!updatePost) throw new APPError("File not found", 404);
 
-  // 3) Send JSON
+  // 4) Send JSON
   res.status(200).json({
     status: "success",
     result: "Updated",
@@ -112,13 +209,26 @@ exports.updatePost = catchAsync(async (req, res) => {
 });
 
 exports.deletePost = catchAsync(async (req, res) => {
-  // 1) Delete Post with given postID
+  // 1) Find the post to be deleted
+  const post = await Post.findById(req.params.postID);
+  if (!post) throw new APPError("File not found.", 404);
+
+  // 2) Delete old images
+  const oldImages = [];
+  oldImages.push(post.post_imageCover);
+  post.post_images.forEach((image) => oldImages.push(image));
+
+  oldImages.forEach((image) => {
+    fs.unlinkSync(`public/images/posts/${image}`);
+  });
+
+  // 3) Delete Post with given postID
   const deletePost = await Post.findByIdAndDelete(req.params.postID);
 
-  // 2) Check if post was deleted or not
+  // 4) Check if post was deleted or not
   if (!deletePost) throw new APPError("File not found", 404);
 
-  // 3) Send JSON
+  // 5) Send JSON
   res.status(204).json({
     status: "success",
     result: "Deleted",
