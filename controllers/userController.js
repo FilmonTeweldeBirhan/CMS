@@ -279,3 +279,53 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
       "Your password has been updated successfully, you can login with your new password.",
   });
 });
+
+/* =========== ONLY ADMIN AFTER THIS  ============ */
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  console.log(req.user.role);
+  // 1) get all users from the database
+  const users = await User.find();
+
+  // 2) Check if there are user(s) in the database
+  if (users.length <= 0)
+    return next(new APPError("No users were found in the database", 404));
+
+  // 3) Send JSON
+  res.status(200).json({
+    status: "success",
+    result: `There are ${users.length} users in the database.`,
+    data: {
+      users,
+    },
+  });
+});
+
+exports.getUser = catchAsync(async (req, res, next) => {
+  // 1) get user from the database using given params
+  const user = await User.findById(req.params.userID);
+
+  // 2) Check if there are user(s) in the database
+  if (!user) return next(new APPError("No user were found with that ID", 404));
+
+  // 3) Send JSON
+  res.status(200).json({
+    status: "success",
+    result: `Found`,
+    user,
+  });
+});
+
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  // 1) Delete user from the database using given params
+  const user = await User.findByIdAndDelete(req.params.userID);
+
+  // 2) Check if there are user(s) in the database
+  if (!user)
+    return next(new APPError("Something went wrong, please try again", 500));
+
+  // 3) Send JSON
+  res.status(204).json({
+    status: "success",
+    result: `Deleted`,
+  });
+});
