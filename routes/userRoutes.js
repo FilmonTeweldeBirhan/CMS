@@ -10,6 +10,10 @@ const {
   deleteMyAccount,
   forgotPassword,
   resetPassword,
+  restrictTo,
+  getAllUsers,
+  getUser,
+  deleteUser,
 } = require("../controllers/userController");
 
 const { isAuth, isNotAuth } = require("./../utils/authMiddleware");
@@ -24,17 +28,19 @@ router.post("/login", login);
 
 router.get("/logout", logout);
 
-router.get("/me", isAuth, getMe);
-
-router.patch("/updateMe", isAuth, uploadUserImage, resizeUserPhoto, updateMe);
-
-router.patch("/updateMyPassword", isAuth, updateMyPassword);
-
-router.delete("/deleteMyAccount", isAuth, deleteMyAccount);
-
 router.patch("/forgotPassword", forgotPassword);
 
 router.patch("/resetPassword", resetPassword);
+
+router.use(isAuth);
+
+router.get("/me", getMe);
+
+router.patch("/updateMe", uploadUserImage, resizeUserPhoto, updateMe);
+
+router.patch("/updateMyPassword", updateMyPassword);
+
+router.delete("/deleteMyAccount", deleteMyAccount);
 
 /* ===========message routes controllers================ */
 router.get("/success", (req, res) => {
@@ -48,5 +54,12 @@ router.get("/error", (req, res) => {
     status: "Unautherized",
   });
 });
+
+// Only an admin can access routes from this point on!.
+router.use(restrictTo("admin"));
+
+router.get("/", getAllUsers);
+
+router.route("/:userID").get(getUser).delete(deleteUser);
 
 module.exports = router;
