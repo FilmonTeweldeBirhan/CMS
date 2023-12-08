@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { isAuth } = require("../utils/authMiddleware");
 const {
   getAllPosts,
   getPost,
@@ -9,6 +10,9 @@ const {
   uploadPostImage,
   resizeImage,
 } = require("./../controllers/postController");
+const { restrictTo } = require("./../controllers/userController");
+
+const reviewRouter = require("./reviewRoutes");
 
 /* =======================
     /api/v1/posts/
@@ -20,7 +24,7 @@ const {
 router
   .route("/")
   .get(getAllPosts)
-  .post(uploadPostImage, resizeImage, createPost);
+  .post(isAuth, restrictTo("admin"), uploadPostImage, resizeImage, createPost);
 
 // Get PostByCategory
 router.get("/category/:catID", getPostByCategory);
@@ -29,7 +33,10 @@ router.get("/category/:catID", getPostByCategory);
 router
   .route("/:postID")
   .get(getPost)
-  .patch(uploadPostImage, resizeImage, updatePost)
-  .delete(deletePost);
+  .patch(isAuth, restrictTo("admin"), uploadPostImage, resizeImage, updatePost)
+  .delete(isAuth, restrictTo("admin"), deletePost);
+
+// Mount to review /posts/:postID/reviews
+router.use("/:postID/reviews", reviewRouter);
 
 module.exports = router;

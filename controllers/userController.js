@@ -106,7 +106,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   const userFile = await User.findById(req.user.id);
 
   // Delete User's old photo if the user gives in new photo
-  if (req.body.photo) {
+  if (req.body.photo && userFile.photo !== "avatar.png") {
     fs.unlinkSync(`public/images/users/${userFile.photo}`);
   }
 
@@ -316,6 +316,15 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteUser = catchAsync(async (req, res, next) => {
+  // # Making sure no one deletes an admin
+  const userRole = await User.findById(req.params.userID);
+
+  if (!userRole)
+    return next(new APPError("No user was found with that ID", 404));
+
+  if (userRole.role === "admin")
+    return next(`You can't delete an admin even if you're an admin`, 403);
+
   // 1) Delete user from the database using given params
   const user = await User.findByIdAndDelete(req.params.userID);
 
