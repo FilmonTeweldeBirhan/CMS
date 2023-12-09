@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-// const moment = require("moment-timezone");
+const dateUTC = require("./../utils/dateUTC");
 
 const postSchema = new mongoose.Schema(
   {
@@ -57,21 +57,15 @@ postSchema.index({ post_category: 1, post_price: 1, ratingsAverage: -1 });
 /* Create New Date for every newly Posted Item
    then save it post_dateCreated prop.  */
 postSchema.pre("save", function (next) {
-  let now = new Date();
-  const timeStamp = new Date(
-    Date.UTC(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      now.getHours(),
-      now.getMinutes(),
-      now.getSeconds(),
-      now.getMilliseconds()
-    )
-  );
-  this.post_dateCreated = timeStamp;
-
+  this.post_dateCreated = dateUTC();
   next();
+});
+
+/* Add virtual property of reviews of the post */
+postSchema.virtual("reviews", {
+  ref: "review",
+  localField: "_id",
+  foreignField: "postID",
 });
 
 // Populate Category on every request with the find criteria
