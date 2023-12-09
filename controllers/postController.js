@@ -6,6 +6,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 
 const Post = require("./../models/postModel");
+const Reveiw = require("./../models/reviewModel");
 const Category = require("../models/categoryModel");
 
 /* ==============================
@@ -136,7 +137,7 @@ exports.getPostByCategory = catchAsync(async (req, res) => {
 
 exports.getPost = catchAsync(async (req, res) => {
   // 1) Get Post with postID
-  const post = await Post.findById(req.params.postID);
+  const post = await Post.findById(req.params.postID).populate("reviews");
 
   // 2) Check if Post exists if not throw error
   if (!post || post.length <= 0) throw new APPError("No post found...", 404);
@@ -214,16 +215,21 @@ exports.deletePost = catchAsync(async (req, res) => {
   if (!post) throw new APPError("File not found.", 404);
 
   // 2) Delete old images
-  const oldImages = [];
-  oldImages.push(post.post_imageCover);
-  post.post_images.forEach((image) => oldImages.push(image));
+  if (post.post_imageCover || post.post_images) {
+    const oldImages = [];
+    oldImages.push(post.post_imageCover);
+    if (post.post_images) {
+      post.post_images.forEach((image) => oldImages.push(image));
+    }
 
-  oldImages.forEach((image) => {
-    fs.unlinkSync(`public/images/posts/${image}`);
-  });
+    oldImages.forEach((image) => {
+      fs.unlinkSync(`public/images/posts/${image}`);
+    });
+  }
 
   // 3) Delete Post with given postID
   const deletePost = await Post.findByIdAndDelete(req.params.postID);
+  const deleteReview = await Reveiw.deleteMany({ postID: req.params.postID });
 
   // 4) Check if post was deleted or not
   if (!deletePost) throw new APPError("File not found", 404);
