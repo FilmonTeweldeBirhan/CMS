@@ -60,8 +60,8 @@ app.use(passport.session());
 
 // trying
 app.use((req, res, next) => {
-  // console.log("SESSION:", req.session);
-  // console.log("USER:", req.user);
+  console.log("SESSION:", req.session);
+  console.log("USER:", req.user);
   console.log("isAuthenticated:", req.isAuthenticated());
 
   next();

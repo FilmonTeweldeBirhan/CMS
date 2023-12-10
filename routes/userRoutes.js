@@ -15,6 +15,7 @@ const {
   getUser,
   deleteUser,
 } = require("../controllers/userController");
+const APPError = require("../utils/appError");
 
 const { isAuth, isNotAuth } = require("./../utils/authMiddleware");
 
@@ -39,11 +40,12 @@ router.get("/success", (req, res) => {
   });
 });
 
-router.get("/error", (req, res) => {
-  res.status(401).json({
-    status: "Unauthurized",
-    message: req.session.messages,
-  });
+router.get("/error", (req, res, next) => {
+  // res.status(401).json({
+  //   status: "Unauthurized",
+  //   message: req.session.messages[0],
+  // });
+  next(new APPError(req.session.messages[0], 401));
 });
 
 router.use(isAuth);

@@ -14,6 +14,7 @@ const postSchema = new mongoose.Schema(
     post_category: {
       type: mongoose.Schema.ObjectId,
       ref: "category",
+      required: [true, "A Post must have a correspondent category"],
     },
     post_price: {
       type: Number,
