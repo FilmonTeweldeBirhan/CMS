@@ -84,6 +84,21 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
   next();
 });
 
+/* Checking if category is valid */
+exports.categoryExists = catchAsync(async (req, res, next) => {
+  // Check if given post_category exists in the category collections
+  const categoryExists = await Category.findById(req.body.post_category);
+
+  if (!categoryExists) {
+    return res.status(400).json({
+      status: "fail",
+      message: "The given post_category is not valid",
+    });
+  }
+
+  next();
+});
+
 /* ==============================
    ========CRUD OPERATION========
    ============================== */

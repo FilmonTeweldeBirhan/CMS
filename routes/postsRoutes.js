@@ -9,6 +9,7 @@ const {
   getPostByCategory,
   uploadPostImage,
   resizeImage,
+  categoryExists,
 } = require("./../controllers/postController");
 const { restrictTo } = require("./../controllers/userController");
 
@@ -24,7 +25,14 @@ const reviewRouter = require("./reviewRoutes");
 router
   .route("/")
   .get(getAllPosts)
-  .post(isAuth, restrictTo("admin"), uploadPostImage, resizeImage, createPost);
+  .post(
+    isAuth,
+    restrictTo("admin"),
+    uploadPostImage,
+    resizeImage,
+    categoryExists,
+    createPost
+  );
 
 // Get PostByCategory
 router.get("/category/:catID", getPostByCategory);
@@ -33,7 +41,14 @@ router.get("/category/:catID", getPostByCategory);
 router
   .route("/:postID")
   .get(getPost)
-  .patch(isAuth, restrictTo("admin"), uploadPostImage, resizeImage, updatePost)
+  .patch(
+    isAuth,
+    restrictTo("admin"),
+    uploadPostImage,
+    resizeImage,
+    categoryExists,
+    updatePost
+  )
   .delete(isAuth, restrictTo("admin"), deletePost);
 
 // Mount to review /posts/:postID/reviews

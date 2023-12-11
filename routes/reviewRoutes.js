@@ -18,9 +18,6 @@ router
   .get(getAllReviewsWithInPosts)
   .post(isAuth, restrictTo("user"), postExists, createReview);
 
-/* Only a logged in user can access routes from now on. */
-router.use(isAuth);
-
 /* /posts/:postID/reveiws/:reviewID */
 router
   .route("/:reviewID/")
