@@ -16,6 +16,11 @@ const app = express();
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
+/* Bug fix only for windows */
+if (process.env.NODE_ENV !== "development") {
+  process.env.NODE_ENV = "production";
+  // console.log(process.env.NODE_ENV, "ofcourse this is production:)");
+}
 // Parsing bodys
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: false }));
