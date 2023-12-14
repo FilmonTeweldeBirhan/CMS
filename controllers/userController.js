@@ -325,6 +325,11 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   if (userRole.role === "admin")
     return next(`You can't delete an admin even if you're an admin`, 403);
 
+  // Unlink the current user's photo
+  if (userRole.photo !== "avatar.png") {
+    fs.unlinkSync(`public/images/users/${userRole.photo}`);
+  }
+
   // 1) Delete user from the database using given params
   const user = await User.findByIdAndDelete(req.params.userID);
 

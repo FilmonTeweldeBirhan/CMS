@@ -87,6 +87,9 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
 /* Checking if category is valid */
 exports.categoryExists = catchAsync(async (req, res, next) => {
   // Check if given post_category exists in the category collections
+  // when you're in patch request!
+  if (!req.body.post_category) return next();
+
   const categoryExists = await Category.findById(req.body.post_category);
 
   if (!categoryExists) {

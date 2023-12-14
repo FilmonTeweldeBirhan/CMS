@@ -18,6 +18,11 @@ const handleValidatorErrorDB = (err) => {
   return new APPError(message, 400);
 };
 
+const handleMailTrap = (err) => {
+  const message = `ConnectionError: ${err.message}`;
+  return new APPError(message, 500);
+};
+
 const handleJWTError = () =>
   new APPError("Invalid token, Please log in again", 401);
 
@@ -93,6 +98,8 @@ module.exports = (err, req, res, next) => {
     error = handleJWTError();
   } else if (err.name === "TokenExpiredError") {
     error = handleJWTExpiredError();
+  } else if (err.errno === -3008) {
+    error = handleMailTrap(err);
   } else {
     error = err;
   }
